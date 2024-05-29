@@ -113,16 +113,19 @@ func Open(path string, options ...Option) (*Device, error) {
 		}
 	}
 
-	return dev, nil
+	err = dev.setFPSAndCaptureMode(path)
+
+	if err != nil {
+		return dev, err
+	}
+	return nil
 }
 
 func (d *Device) setFPSAndCaptureMode(path string) error {
 	if !reflect.ValueOf(d.config.fps).IsZero() && !reflect.ValueOf(d.config.captureMode).IsZero() {
 		var param v4l2.StreamParam
-		param.Capture = v4l2.CaptureParam{
-			TimePerFrame: v4l2.Fract{Numerator: 1, Denominator: d.config.fps},
-			CaptureMode:  d.config.captureMode,
-		}
+		param.Capture = v4l2.CaptureParam{TimePerFrame: v4l2.Fract{Numerator: 1, Denominator: d.config.fps}}
+		param.Capture.CaptureMode = d.config.captureMode
 		return d.SetStreamParam(param)
 	} else if !reflect.ValueOf(d.config.fps).IsZero() {
 		return d.SetFrameRate(d.config.fps)

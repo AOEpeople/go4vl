@@ -86,6 +86,15 @@ func GetCurrentVideoInputIndex(fd uintptr) (int32, error) {
 	return index, nil
 }
 
+// SetCurrentVideoInputIndex sets input information for video device
+// See https://linuxtv.org/downloads/v4l-dvb-apis/userspace-api/v4l/vidioc-g-input.html
+func SetCurrentVideoInputIndex(fd uintptr, index int32) (int32, error) {
+	if err := send(fd, C.VIDIOC_S_INPUT, uintptr(unsafe.Pointer(&index))); err != nil {
+		return -1, fmt.Errorf("video input set: %w", err)
+	}
+	return index, nil
+}
+
 // GetVideoInputInfo returns specified input information for video device
 // See https://linuxtv.org/downloads/v4l-dvb-apis/userspace-api/v4l/vidioc-enuminput.html
 func GetVideoInputInfo(fd uintptr, index uint32) (InputInfo, error) {

@@ -118,14 +118,17 @@ func Open(path string, options ...Option) (*Device, error) {
 	if err != nil {
 		return dev, err
 	}
-	return nil
+
+	return dev, nil
 }
 
 func (d *Device) setFPSAndCaptureMode(path string) error {
 	if !reflect.ValueOf(d.config.fps).IsZero() && !reflect.ValueOf(d.config.captureMode).IsZero() {
 		var param v4l2.StreamParam
-		param.Capture = v4l2.CaptureParam{TimePerFrame: v4l2.Fract{Numerator: 1, Denominator: d.config.fps}}
-		param.Capture.CaptureMode = d.config.captureMode
+		param.Capture = v4l2.CaptureParam{
+			TimePerFrame: v4l2.Fract{Numerator: 1, Denominator: d.config.fps},
+			CaptureMode:  d.config.captureMode,
+		}
 		return d.SetStreamParam(param)
 	} else if !reflect.ValueOf(d.config.fps).IsZero() {
 		return d.SetFrameRate(d.config.fps)
@@ -141,11 +144,11 @@ func (d *Device) setFPSAndCaptureMode(path string) error {
 
 // Close closes the underlying device associated with `d` .
 func (d *Device) Close() error {
-	if d.streaming {
-		if err := d.Stop(); err != nil {
-			return err
-		}
-	}
+	//if d.streaming {
+	//	if err := d.Stop(); err != nil {
+	//		return err
+	//	}
+	//}
 	return v4l2.CloseDevice(d.fd)
 }
 
@@ -458,9 +461,16 @@ func (d *Device) startStreamLoop(ctx context.Context, handleError func(error)) e
 				// copy mapped buffer (copying avoids polluted data from subsequent dequeue ops)
 				if buff.Flags&v4l2.BufFlagMapped != 0 && buff.Flags&v4l2.BufFlagError == 0 {
 					frame = make([]byte, buff.BytesUsed)
-					if n := copy(frame, d.buffers[buff.Index][:buff.BytesUsed]); n == 0 {
+					if uint32(len(d.buffers)) < buff.Index || uint32(len(d.buffers[buff.Index])) < buff.BytesUsed {
 						d.output <- []byte{}
+						continue
 					}
+
+					if n := copy(frame, d.buffers[buff.Index]); n == 0 {
+						d.output <- []byte{}
+						continue
+					}
+
 					d.output <- frame
 					frame = nil
 				} else {

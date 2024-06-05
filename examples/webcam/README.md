@@ -48,7 +48,7 @@ Once built, you can start the webcam with the following command (and output as s
 Next, point your browser to your machine's address and shown port (i.e. `http://198.162.100.20:9090`). 
 You should see a webpage with the streaming video (see below.)
 
-![](./screenshot.png)
+![](screenshot.png)
 
 The webcam program offers several CLI arguments that you can use to configure the webcam:
 
@@ -162,4 +162,4 @@ func serveVideoStream(w http.ResponseWriter, req *http.Request) {
 }
 ```
 
-> See the full source code [here](./webcam.go)
+> See the full source code [here](webcam.go)

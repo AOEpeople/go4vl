@@ -57,4 +57,4 @@ func main() {
 }
 ```
 
-> See the full source code [here](./capture0.go).
+> See the full source code [here](capture0.go).

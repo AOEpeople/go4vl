@@ -36,4 +36,4 @@ func printDeviceDriverInfo(dev *device.Device) error {
 }
 ```
 
-> See the [complete example](./devinfo.go) and all available device information from go4vl.
+> See the [complete example](devinfo.go) and all available device information from go4vl.

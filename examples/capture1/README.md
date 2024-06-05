@@ -116,4 +116,4 @@ fun main() {
 }
 ```
 
-> See source code [here](./capture1.go).
+> See source code [here](capture1.go).

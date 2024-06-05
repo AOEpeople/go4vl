@@ -2,7 +2,7 @@
 
 # go4vl
 
-![](./docs/go4vl-logo-small.png)
+![](docs/go4vl-logo-small.png)
 
 A Go centric abstraction of the library for  `Video for Linux 2`  (v4l2) user API.
 
@@ -116,12 +116,12 @@ func main() {
 }
 ```
 
-> Read a detail walk-through about this example [here](./examples/capture0/README.md).
+> Read a detail walk-through about this example [here](examples/capture0/README.md).
 
 ### Other examples
-The [./examples](./examples/README.md) directory contains additional examples including:
-* [device_info](./examples/device_info/README.md) - queries and prints video device information
-* [webcam](./examples/webcam/README.md) - uses the v4l2 package to create a simple webcam that streams images from an attached camera accessible via a web page.
+The [./examples](examples/README.md) directory contains additional examples including:
+* [device_info](examples/device_info/README.md) - queries and prints video device information
+* [webcam](examples/webcam/README.md) - uses the v4l2 package to create a simple webcam that streams images from an attached camera accessible via a web page.
 
 ## Roadmap
 The main goal is to port as many functionalities as possible so that 

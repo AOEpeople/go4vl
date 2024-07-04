@@ -11,6 +11,7 @@ type config struct {
 	fps         uint32
 	bufType     uint32
 	captureMode uint32
+	inputIndex  int32
 }
 
 type Option func(*config)
@@ -54,5 +55,11 @@ func WithVideoCaptureEnabled() Option {
 func WithVideoOutputEnabled() Option {
 	return func(o *config) {
 		o.bufType = v4l2.BufTypeVideoOutput
+	}
+}
+
+func WithVideoInputIndex(index int32) Option {
+	return func(o *config) {
+		o.inputIndex = index
 	}
 }

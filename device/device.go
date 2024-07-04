@@ -41,6 +41,12 @@ func Open(path string, options ...Option) (*Device, error) {
 		}
 	}
 
+	// set video input
+	_, err = v4l2.SetCurrentVideoInputIndex(dev.fd, dev.config.inputIndex)
+	if err != nil {
+		return nil, fmt.Errorf("cannot set video input: %v", err)
+	}
+
 	// get capability
 	cap, err := v4l2.GetCapability(dev.fd)
 	if err != nil {
@@ -311,6 +317,24 @@ func (d *Device) SetFrameRate(fps uint32) error {
 	}
 	d.config.fps = fps
 	return nil
+}
+
+// GetCaptureMode returns the capture mode value for the device
+func (d *Device) GetCaptureMode() (uint32, error) {
+	param, err := d.GetStreamParam()
+	if err != nil {
+		return 0, fmt.Errorf("device: capture mdoe: %w", err)
+	}
+	switch {
+	case d.cap.IsVideoCaptureSupported():
+		d.config.captureMode = param.Capture.CaptureMode
+	case d.cap.IsVideoOutputSupported():
+		d.config.captureMode = param.Output.CaptureMode
+	default:
+		return 0, v4l2.ErrorUnsupportedFeature
+	}
+	return d.config.captureMode, nil
+
 }
 
 // GetFrameRate returns the FPS value for the device

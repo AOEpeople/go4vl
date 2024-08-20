@@ -95,6 +95,12 @@ func Open(path string, options ...Option) (*Device, error) {
 		}
 	}
 
+	err = dev.setFPSAndCaptureMode(path)
+
+	if err != nil {
+		return dev, err
+	}
+
 	// set pix format
 	if !reflect.ValueOf(dev.config.pixFormat).IsZero() {
 		if err := dev.SetPixFormat(dev.config.pixFormat); err != nil {
@@ -105,12 +111,6 @@ func Open(path string, options ...Option) (*Device, error) {
 		if err != nil {
 			return nil, fmt.Errorf("device open: %s: get default format: %w", path, err)
 		}
-	}
-
-	err = dev.setFPSAndCaptureMode(path)
-
-	if err != nil {
-		return dev, err
 	}
 
 	return dev, nil

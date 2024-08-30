@@ -428,6 +428,7 @@ func (d *Device) startStreamLoop(ctx context.Context) error {
 		return fmt.Errorf("device: stream on: %w", err)
 	}
 
+	var err error
 	go func() {
 		defer close(d.output)
 
@@ -445,7 +446,8 @@ func (d *Device) startStreamLoop(ctx context.Context) error {
 					if errors.Is(err, sys.EAGAIN) {
 						continue
 					}
-					panic(fmt.Sprintf("device: stream loop dequeue: %s", err))
+					err = fmt.Errorf("device: stream loop dequeue: %s", err)
+					_ = d.Stop()
 				}
 
 				// copy mapped buffer (copying avoids polluted data from subsequent dequeue ops)
@@ -461,14 +463,15 @@ func (d *Device) startStreamLoop(ctx context.Context) error {
 				}
 
 				if _, err := v4l2.QueueBuffer(fd, ioMemType, bufType, buff.Index); err != nil {
-					panic(fmt.Sprintf("device: stream loop queue: %s: buff: %#v", err, buff))
+					err = fmt.Errorf("device: stream loop queue: %s: buff: %#v", err, buff)
+					_ = d.Stop()
 				}
 			case <-ctx.Done():
-				d.Stop()
+				_ = d.Stop()
 				return
 			}
 		}
 	}()
 
-	return nil
+	return err
 }

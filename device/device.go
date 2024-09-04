@@ -362,7 +362,7 @@ func (d *Device) GetMediaInfo() (v4l2.MediaDeviceInfo, error) {
 	return v4l2.GetMediaDeviceInfo(d.fd)
 }
 
-func (d *Device) Start(ctx context.Context) error {
+func (d *Device) Start(ctx context.Context, handleError func(error)) error {
 	if ctx.Err() != nil {
 		return ctx.Err()
 	}
@@ -389,7 +389,7 @@ func (d *Device) Start(ctx context.Context) error {
 		return fmt.Errorf("device: make mapped buffers: %s", err)
 	}
 
-	if err := d.startStreamLoop(ctx); err != nil {
+	if err := d.startStreamLoop(ctx, handleError); err != nil {
 		return fmt.Errorf("device: start stream loop: %s", err)
 	}
 
@@ -415,7 +415,7 @@ func (d *Device) Stop() error {
 // startStreamLoop sets up the loop to run until context is cancelled, and returns immediately
 // and report any errors. The loop runs in a separate goroutine and uses the sys.Select to trigger
 // capture events.
-func (d *Device) startStreamLoop(ctx context.Context) error {
+func (d *Device) startStreamLoop(ctx context.Context, handleError func(error)) error {
 	// Initial enqueue of buffers for capture
 	for i := 0; i < int(d.config.bufSize); i++ {
 		_, err := v4l2.QueueBuffer(d.fd, d.config.ioType, d.bufType, uint32(i))
@@ -445,7 +445,11 @@ func (d *Device) startStreamLoop(ctx context.Context) error {
 					if errors.Is(err, sys.EAGAIN) {
 						continue
 					}
-					panic(fmt.Sprintf("device: stream loop dequeue: %s", err))
+					handleError(fmt.Errorf("device: stream loop dequeue: %w", err))
+					if err := d.Stop(); err != nil {
+						handleError(fmt.Errorf("device: stop: %w", err))
+					}
+					return
 				}
 
 				// copy mapped buffer (copying avoids polluted data from subsequent dequeue ops)
@@ -461,10 +465,16 @@ func (d *Device) startStreamLoop(ctx context.Context) error {
 				}
 
 				if _, err := v4l2.QueueBuffer(fd, ioMemType, bufType, buff.Index); err != nil {
-					panic(fmt.Sprintf("device: stream loop queue: %s: buff: %#v", err, buff))
+					handleError(fmt.Errorf("device: stream loop queue: %w: buff: %#v", err, buff))
+					if err := d.Stop(); err != nil {
+						handleError(fmt.Errorf("device: stop: %w", err))
+					}
+					return
 				}
 			case <-ctx.Done():
-				d.Stop()
+				if err := d.Stop(); err != nil {
+					handleError(fmt.Errorf("device: stop: %w", err))
+				}
 				return
 			}
 		}

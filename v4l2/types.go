@@ -22,6 +22,6 @@ type StreamingDevice interface {
 	Buffers() [][]byte
 	BufferType() BufType
 	BufferCount() uint32
-	Start(context.Context) error
+	Start(context.Context, func(error)) error
 	Stop() error
 }

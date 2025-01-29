@@ -14,7 +14,10 @@ import (
 )
 
 var (
-	frames <-chan []byte
+	frames   <-chan []byte
+	callback = func(error) {
+		return
+	}
 )
 
 func imageServ(w http.ResponseWriter, req *http.Request) {
@@ -52,7 +55,7 @@ func main() {
 	}
 	defer camera.Close()
 
-	if err := camera.Start(context.TODO()); err != nil {
+	if err := camera.Start(context.TODO(), callback); err != nil {
 		log.Fatalf("camera start: %s", err)
 	}
 

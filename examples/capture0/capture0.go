@@ -12,6 +12,10 @@ import (
 	"github.com/vladimirvivien/go4vl/v4l2"
 )
 
+var callback = func(error) {
+	return
+}
+
 func main() {
 	devName := "/dev/video0"
 	flag.StringVar(&devName, "d", devName, "device name (path)")
@@ -29,7 +33,7 @@ func main() {
 
 	// start stream
 	ctx, stop := context.WithCancel(context.TODO())
-	if err := device.Start(ctx); err != nil {
+	if err := device.Start(ctx, callback); err != nil {
 		log.Fatalf("failed to start stream: %s", err)
 	}
 

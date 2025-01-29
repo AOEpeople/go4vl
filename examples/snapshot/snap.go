@@ -8,6 +8,10 @@ import (
 	"github.com/vladimirvivien/go4vl/device"
 )
 
+var callback = func(error) {
+	return
+}
+
 func main() {
 	dev, err := device.Open("/dev/video0", device.WithBufferSize(1))
 	if err != nil {
@@ -15,7 +19,7 @@ func main() {
 	}
 	defer dev.Close()
 
-	if err := dev.Start(context.TODO()); err != nil {
+	if err := dev.Start(context.TODO(), callback); err != nil {
 		log.Fatal(err)
 	}
 

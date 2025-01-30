@@ -103,6 +103,9 @@ func WaitForRead(dev Device) <-chan struct{} {
 			}
 
 			sigChan <- struct{}{}
+
+			// Exit the loop after signaling readiness
+			return
 		}
 	}(dev.Fd())
 
